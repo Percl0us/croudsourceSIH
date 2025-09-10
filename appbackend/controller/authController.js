@@ -14,6 +14,7 @@ export const signup = async (req, res) => {
     }
     const hashedPaswword = await bcrypt.hash(password, 11);
     const newUser = new user({ email, password: hashedPaswword });
+    console.log("saving");
     await newUser.save();
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
@@ -25,7 +26,7 @@ export const login = async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
-  const existingUser = await user.findOne({email});
+  const existingUser = await user.findOne({ email });
   if (!existingUser) {
     return res.status(400).json({ message: "User not found" });
   }
@@ -39,13 +40,11 @@ export const login = async (req, res) => {
   const token = jwt.sign({ id: existingUser._id }, JWT_SECRET, {
     expiresIn: "10h",
   });
-  res
-    .status(200)
-    .json({
-      message: "login succesful",
-      token,
-      user: { id: existingUser._id, email: existingUser.email },
-    });
+  res.status(200).json({
+    message: "login succesful",
+    token,
+    user: { id: existingUser._id, email: existingUser.email },
+  });
 };
 export const profile = async (req, res) => {
   try {
