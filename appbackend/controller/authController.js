@@ -1,4 +1,4 @@
-import user from "../models/user";
+import user from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 const JWT_SECRET = "supersecret";
@@ -25,7 +25,7 @@ export const login = async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
-  const existingUser = await user.find(email);
+  const existingUser = await user.findOne({email});
   if (!existingUser) {
     return res.status(400).json({ message: "User not found" });
   }
@@ -36,12 +36,22 @@ export const login = async (req, res) => {
   if (!isPasswordCorrect) {
     return res.status(400).json({ message: "invalid credentials" });
   }
+  const token = jwt.sign({ id: existingUser._id }, JWT_SECRET, {
+    expiresIn: "10h",
+  });
+  res
+    .status(200)
+    .json({
+      message: "login succesful",
+      token,
+      user: { id: existingUser._id, email: existingUser.email },
+    });
 };
 export const profile = async (req, res) => {
   try {
     const user = await user.findbyId(req.user.id);
     res.json({ email: user.email });
   } catch (error) {
-    res.staus(500).json({message:"Server error"});
+    res.staus(500).json({ message: "Server error" });
   }
 };
